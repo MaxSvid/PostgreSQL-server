@@ -1,0 +1,47 @@
+version: '3.8'
+
+networks:
+  pg_network:
+    driver: bridge
+
+services:
+
+  postgres_server:
+    container_name: postgres_server
+    image: postgres:latest
+    networks:
+      - pg_network
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      PGDATA: ${PGDATA}
+    volumes:
+      - postgres_server_data:${PGDATA}
+    ports:
+      - "${POSTGRES_PORT_HOST}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user_0708 -d DB_0708"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  pgadmin_server:
+    image: dpage/pgadmin4
+    container_name: pgadmin_server
+    networks:
+      - pg_network
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT_HOST}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
+
+volumes:
+  pgadmin_data:
+  postgres_server_data:
