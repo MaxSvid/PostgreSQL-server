@@ -8,7 +8,7 @@ services:
 
   postgres_server:
     container_name: postgres_server
-    image: postgres:latest
+    image: postgres:16
     networks:
       - pg_network
     environment:
@@ -18,10 +18,11 @@ services:
       PGDATA: ${PGDATA}
     volumes:
       - postgres_server_data:${PGDATA}
+      - ./database:/docker-entrypoint-initdb.d
     ports:
       - "${POSTGRES_PORT_HOST}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user_0708 -d DB_0708"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -40,6 +41,9 @@ services:
       - "${PGADMIN_PORT_HOST}:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres_server:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
