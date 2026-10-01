@@ -1,0 +1,6 @@
+version: '3.8'
+
+networks:
+  alpha1_net:
+    name: alpha1_vps_network
+    driver: bridge
