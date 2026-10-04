@@ -1,0 +1,33 @@
+version: '3.8'
+
+networks:
+  alpha1_net:
+    name: alpha1_vps_network
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: beta1_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      PGDATA: ${PGDATA}
+      PGBOUNCER_AUTH_PASSWORD: ${PGBOUNCER_AUTH_PASSWORD}
+      WALLET_TRACKER_SERVICE_PASSWORD: ${WALLET_TRACKER_SERVICE_PASSWORD}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT}:5432" # localhost only reach it remotely via SSH tunnel
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d # autoruns .sql files here
+    networks:
+      - alpha1_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+ 
