@@ -227,3 +227,7 @@ __marimo__/
 /config/pgbouncer/userlist.txt
 
 /docs/RUNBOOK.md
+
+CLAUDE.md
+.claude
+openspec/
