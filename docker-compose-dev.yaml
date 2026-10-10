@@ -32,6 +32,28 @@ services:
       timeout: 5s
       retries: 5
 
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: beta1_pgbouncer
+    restart: unless-stopped
+    # Settings are in config/pgbouncer/pgbouncer.ini, except POOL_MODE below.
+    # DB_USER/DB_PASSWORD/AUTH_TYPE make the image write pgbouncer_auth's one line
+    # to its auth file. Other image config env vars are ignored while the ini is mounted.
+    environment:
+      DB_USER: pgbouncer_auth
+      DB_PASSWORD: ${PGBOUNCER_AUTH_PASSWORD:?PGBOUNCER_AUTH_PASSWORD is required}
+      AUTH_TYPE: scram-sha-256 # makes the image store the password as plain text
+      POOL_MODE: transaction # session | transaction | statement
+    ports:
+      - "127.0.0.1:${PGBOUNCER_PORT}:5432" # localhost only reach it remotely via SSH tunnel
+    volumes:
+      - ./config/pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+    networks:
+      - alpha1_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: beta1_pgadmin
@@ -53,4 +75,6 @@ services:
 
 volumes:
   postgres_data:
+    name: beta1_postgres_data
   pgadmin_data:
+    name: beta1_pgadmin_data

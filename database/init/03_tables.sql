@@ -6,4 +6,3 @@ CREATE TABLE IF NOT EXISTS bot_users(
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     joined TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-

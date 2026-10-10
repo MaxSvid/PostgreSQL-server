@@ -36,6 +36,20 @@ Match User <member>
     ForceCommand /usr/sbin/nologin
 ```
 
+### PgBouncer (bots)
+
+Bots connect through PgBouncer, not to Postgres directly:
+
+```
+host=pgbouncer port=5432 dbname=<POSTGRES_DB> user=<bot role> password=<bot password>
+```
+
+- Only `POSTGRES_DB` works through PgBouncer (the auth lookup function lives there). Superusers can't log in through it; use pgAdmin or `docker exec` instead.
+- PgBouncer looks up each role's password live (`auth_query`), so new roles and password changes work immediately, with no PgBouncer restart or file edit. Its only stored credential is `pgbouncer_auth`'s password, written to a one-line auth file inside the container at start from `PGBOUNCER_AUTH_PASSWORD`.
+- **Transaction pooling**: a Postgres connection is held only for one transaction. Don't rely on session state (`SET` outside a transaction, `LISTEN/NOTIFY`, session advisory locks, temp tables across transactions). Prepared statements (e.g. asyncpg) are supported. A bot that needs session features connects to `postgres:5432` directly.
+- Limits: up to 200 client connections, at most 30 Postgres connections, which leaves the rest of `max_connections = 50` for direct admin access.
+- pgAdmin stays on `postgres:5432`; don't point it at PgBouncer.
+
 ### Projects and roles
 
 One schema per project inside `POSTGRES_DB`, each with three NOLOGIN group roles: `<p>_owner` (owns the schema), `<p>_rw` and `<p>_ro`. Access is granted only through membership. Helpers from `database/init/02_project_admin.sql`, superuser only:
