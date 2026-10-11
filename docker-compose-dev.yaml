@@ -1,4 +1,9 @@
-version: '3.8'
+# Cap each container's logs at 3 x 10 MB so they can't fill the VPS disk
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
 
 networks:
   alpha1_net:
@@ -7,9 +12,11 @@ networks:
 
 services:
   postgres:
-    image: postgres:latest
+    image: postgres:18
     container_name: beta1_postgres
     restart: unless-stopped
+    stop_grace_period: 60s # let Postgres finish its shutdown checkpoint (Docker default is 10s)
+    logging: *logging
     command: postgres -c config_file=/etc/postgresql/postgresql.conf # repo config replaces the generated one in PGDATA
     shm_size: 256mb # /dev/shm for parallel query (Docker default is 64MB)
     environment:
@@ -17,6 +24,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       PGDATA: ${PGDATA}
+      POSTGRES_HOST_AUTH_METHOD: ${POSTGRES_HOST_AUTH_METHOD} # pg_hba method, written on first init
       PGBOUNCER_AUTH_PASSWORD: ${PGBOUNCER_AUTH_PASSWORD}
     ports:
       - "127.0.0.1:${POSTGRES_PORT}:5432" # localhost only reach it remotely via SSH tunnel
@@ -36,14 +44,12 @@ services:
     image: edoburu/pgbouncer:latest
     container_name: beta1_pgbouncer
     restart: unless-stopped
-    # Settings are in config/pgbouncer/pgbouncer.ini, except POOL_MODE below.
-    # DB_USER/DB_PASSWORD/AUTH_TYPE make the image write pgbouncer_auth's one line
-    # to its auth file. Other image config env vars are ignored while the ini is mounted.
+    logging: *logging
+    # All settings (connection, auth, pooling) are in config/pgbouncer/pgbouncer.ini.
     environment:
       DB_USER: pgbouncer_auth
       DB_PASSWORD: ${PGBOUNCER_AUTH_PASSWORD:?PGBOUNCER_AUTH_PASSWORD is required}
       AUTH_TYPE: scram-sha-256 # makes the image store the password as plain text
-      POOL_MODE: transaction # session | transaction | statement
     ports:
       - "127.0.0.1:${PGBOUNCER_PORT}:5432" # localhost only reach it remotely via SSH tunnel
     volumes:
@@ -58,6 +64,7 @@ services:
     image: dpage/pgadmin4:latest
     container_name: beta1_pgadmin
     restart: unless-stopped
+    logging: *logging
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
