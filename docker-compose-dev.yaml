@@ -15,7 +15,7 @@ services:
     image: postgres:18
     container_name: beta1_postgres
     restart: unless-stopped
-    stop_grace_period: 60s # let Postgres finish its shutdown checkpoint (Docker default is 10s)
+    stop_grace_period: 60s # let Postgres finish its shutdown checkpoint 
     logging: *logging
     command: postgres -c config_file=/etc/postgresql/postgresql.conf # repo config replaces the generated one in PGDATA
     shm_size: 256mb # /dev/shm for parallel query (Docker default is 64MB)

@@ -31,3 +31,8 @@ Sourcers
 
 Grafana 
 https://blog.devgenius.io/how-to-setup-grafana-with-postgresql-database-using-docker-compose-a-step-by-step-guide-e5a9cce90ba3
+
+
+- **Image** = a read-only template (e.g. `postgres:18`). **Container** = a running instance of an image. **Volume** = storage that outlives containers.
+- **Docker Compose** describes several containers, their settings, networks and volumes in one YAML file, so the whole server starts with one command.
+- On Windows, Docker runs inside a small Linux VM (WSL2). That's why containers are Linux even on your laptop, and why the VPS behaves the same.
