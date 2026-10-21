@@ -1,7 +1,13 @@
+networks:
+  alpha1_net:
+    name: alpha1_vps_network
+    external: True
 services:
   postgres:
     image: postgres:18
-    container_name: beta1_postgres
+    container_name: test1_postgres
+    networks:
+      - alpha1_net
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
