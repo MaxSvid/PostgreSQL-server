@@ -1,0 +1,7 @@
+# Linux reads these files: always LF, whatever the Windows git settings
+*.sh   text eol=lf
+*.sql  text eol=lf
+*.conf text eol=lf
+*.ini  text eol=lf
+*.yaml text eol=lf
+.env*  text eol=lf
