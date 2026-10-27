@@ -13,7 +13,7 @@ networks:
 services:
   postgres:
     image: postgres:18
-    container_name: beta1_postgres
+    container_name: dev1_postgres
     restart: unless-stopped
     stop_grace_period: 60s # let Postgres finish its shutdown checkpoint 
     logging: *logging
@@ -46,7 +46,7 @@ services:
 
   pgbouncer:
     image: edoburu/pgbouncer:latest
-    container_name: beta1_pgbouncer
+    container_name: dev1_pgbouncer
     restart: unless-stopped
     logging: *logging
     # All settings (connection, auth, pooling) are in config/pgbouncer/pgbouncer.ini.
@@ -66,7 +66,7 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: beta1_pgadmin
+    container_name: dev1_pgadmin
     restart: unless-stopped
     logging: *logging
     environment:
@@ -86,6 +86,6 @@ services:
 
 volumes:
   postgres_data:
-    name: beta1_postgres_data
+    name: dev1_postgres_data
   pgadmin_data:
-    name: beta1_pgadmin_data
+    name: dev1_pgadmin_data

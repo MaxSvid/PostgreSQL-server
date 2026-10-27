@@ -36,3 +36,7 @@ https://blog.devgenius.io/how-to-setup-grafana-with-postgresql-database-using-do
 - **Image** = a read-only template (e.g. `postgres:18`). **Container** = a running instance of an image. **Volume** = storage that outlives containers.
 - **Docker Compose** describes several containers, their settings, networks and volumes in one YAML file, so the whole server starts with one command.
 - On Windows, Docker runs inside a small Linux VM (WSL2). That's why containers are Linux even on your laptop, and why the VPS behaves the same.
+
+Each Postgres connection costs roughly 5 to 10 MB of memory, and each sort or hash operation can use up to work_mem (4 MB) on top. Your server has 2 GB and max_connections = 50.
+More connections don’t make queries faster. They make them fight over the CPU. A pool of about 10 handles far more traffic than you’ll have.
+PgBouncer in transaction mode lets many clients share a few real connections. That’s why you can have 200 clients and 10 connections.

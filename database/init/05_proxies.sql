@@ -1,7 +1,7 @@
 --- Proxies tables for copying wallet trades in bot
 
 CREATE TABLE IF NOT EXISTS proxies (
-    proxy_id        SERIAL PRIMARY KEY,
+    proxy_id        BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     protocol        TEXT NOT NULL DEFAULT 'http'
                     CHECK (protocol IN ('http', 'https', 'socks5')),
     host            TEXT NOT NULL,
