@@ -40,3 +40,8 @@ https://blog.devgenius.io/how-to-setup-grafana-with-postgresql-database-using-do
 Each Postgres connection costs roughly 5 to 10 MB of memory, and each sort or hash operation can use up to work_mem (4 MB) on top. Your server has 2 GB and max_connections = 50.
 More connections don’t make queries faster. They make them fight over the CPU. A pool of about 10 handles far more traffic than you’ll have.
 PgBouncer in transaction mode lets many clients share a few real connections. That’s why you can have 200 clients and 10 connections.
+
+
+# Roles 
+
+.env  ->  compose (postgres: environment:)  ->  container environment  ->  \getenv  ->  CREATE ROLE ... PASSWORD

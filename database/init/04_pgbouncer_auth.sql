@@ -11,16 +11,25 @@ CREATE ROLE pgbouncer_auth WITH LOGIN PASSWORD :'pgbouncer_auth_password' CONNEC
 
 -- SECURITY DEFINER makes this run as its owner (a superuser), so it can read
 -- pg_shadow -- pgbouncer_auth itself only ever gets EXECUTE, nothing more.
-CREATE FUNCTION public.pgbouncer_auth_lookup(in_username text)
-RETURNS TABLE (usename name, passwd text)
+
+GRANT CONNECT ON DATABASE my_database TO pgbouncer;
+
+-- dedicated schema for PgBouncer utilities
+CREATE SCHEMA IF NOT EXISTS pgbouncer AUTHORIZATION pgbouncer;
+
+-- SECURITY DEFINER function to fetch user password hashes
+-- SECURITY DEFINER allows the 'pgbouncer' role to read pg_shadow securely
+CREATE OR REPLACE FUNCTION pgbouncer.get_auth(p_usename TEXT)
+RETURNS TABLE(usename NAME, passwd TEXT)
 LANGUAGE sql
-SECURITY DEFINER                 -- run with the owner's (superuser's) rights
-SET search_path = pg_catalog     -- only look inside the system catalog
+SECURITY DEFINER
+SET search_path = pg_catalog
 AS $$
-    SELECT usename, passwd FROM pg_shadow WHERE usename = in_username;
+    SELECT usename, passwd 
+    FROM pg_shadow 
+    WHERE usename = p_usename;
 $$;
 
--- STEP 4: by default everyone may run a new function, so remove that,
--- then give the right to pgbouncer_auth only.
-REVOKE ALL ON FUNCTION public.pgbouncer_auth_lookup(text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.pgbouncer_auth_lookup(text) TO pgbouncer_auth;
+-- Restrict function permissions so only the pgbouncer role can run it
+REVOKE ALL ON FUNCTION pgbouncer.get_auth(TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION pgbouncer.get_auth(TEXT) TO pgbouncer;

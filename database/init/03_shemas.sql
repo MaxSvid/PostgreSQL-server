@@ -35,3 +35,5 @@ CREATE TABLE IF NOT EXISTS telegram.wallets(
 --- INDEX to improve the speed for queries 
 CREATE INDEX IF NOT EXISTS user_wallets_idx 
 ON telegram.wallets (wallet_id) WHERE is_active;
+
+--- Web Application tables 
