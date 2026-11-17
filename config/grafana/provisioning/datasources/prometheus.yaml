@@ -1,0 +1,12 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://localhost:9090
+    isDefault: true
+    version: 1
+    editable: true # Set to false if you don't want to allow editing via the UI
+    uid: prometheus-main

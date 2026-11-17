@@ -8,7 +8,7 @@ networks:
   alpha1_net:
     name: alpha1_vps_network
     external: true
-  
+
 services:
   postgres:
     image: postgres:18
@@ -21,8 +21,13 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      PGDATA: ${PGDATA:?set PGDATA in .env}
+      PGDATA: ${PGDATA}
       POSTGRES_HOST_AUTH_METHOD: ${POSTGRES_HOST_AUTH_METHOD:-scram-sha-256}
+      SENIOR_DEV_PASSWORD: ${SENIOR_DEV_PASSWORD}
+      APP_TELEGRAM_BOT_PASSWORD: ${APP_TELEGRAM_BOT_PASSWORD}
+      APP_TRACKER_WEB_PASSWORD: ${APP_TRACKER_WEB_PASSWORD}
+      PGBOUNCER_AUTH_PASSWORD: ${PGBOUNCER_AUTH_PASSWORD}
+      GRAFANA_MONITOR_PASSWORD: ${GRAFANA_MONITOR_PASSWORD}
     shm_size: 128mb
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
@@ -38,22 +43,28 @@ services:
       - ./database/init:/docker-entrypoint-initdb.d:ro
     ports:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
-  
+
   grafana:
     image: grafana/grafana:latest
     container_name: grafana_dashboard
-    restart: always
+    restart: unless-stopped
+    networks:
+      - alpha1_net
     ports:
       - "${GRAFANA_PORT:-3000}:3000"
     environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
-      - GF_USERS_ALLOW_SIGN_UP=false
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    logging: *default-logging
     volumes:
       - grafana_data:/var/lib/grafana
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:
     name: test_postgres_data
+  grafana_data:
+    name: test_grafana_data

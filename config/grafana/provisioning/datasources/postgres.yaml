@@ -1,0 +1,7 @@
+# Grafana reads this at start-up and creates the data source
+# Kept in git, so the connection is never "clicked together" by hand
+# ${GRAFANA_MONITOR_PASSWORD} is expanded from the container's env
+apiVersion: 1
+
+datasources:
+  - name: Postgres
