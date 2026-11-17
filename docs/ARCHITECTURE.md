@@ -45,3 +45,10 @@ PgBouncer in transaction mode lets many clients share a few real connections. Th
 # Roles 
 
 .env  ->  compose (postgres: environment:)  ->  container environment  ->  \getenv  ->  CREATE ROLE ... PASSWORD
+
+# Grafana dashboard concepts 
+
+- **`pg_monitor`** — a built-in role bundling `pg_read_all_stats`, `pg_read_all_settings`, `pg_stat_scan_tables`. Monitoring without any data access.
+- **Two leak paths closed:** query text is normalised (`'secret'` → `$1`), and `track_utility = off` means `ALTER ROLE ... PASSWORD` is never stored at all.
+- **`default_transaction_read_only`** — every transaction of this role starts read-only. A write fails with *cannot execute INSERT in a read-only transaction*.
+- This is the overview's `add-grafana-postgres-monitoring` change: file number **06**, as decided.
